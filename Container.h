@@ -10,11 +10,13 @@ private:
 	double length;
 	double width;
 	double height;
-	double tempeture;
 	double pressure;
 	double pressureAccumulator;
 	double surface;
 	double volume;
+	int countInVolume;
+	
+	bool isInVolume(const sf::Vector3<double> *coordinates);
 
 public:
 	Container(double length, double width, double height, double temperature);
@@ -24,6 +26,9 @@ public:
 	
 	void getVelocityDistribution(sf::Vector3<double> *data);
 	double getPressure();
+	int getCountInVolume();
+	
+	void setTemperature(double temperature);
 };
 
 #endif //GAS_CONTAINER_H

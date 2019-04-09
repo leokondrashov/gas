@@ -5,23 +5,14 @@ Container::Container(double length, double width, double height, double temperat
 	this->length = length;
 	this->width = width;
 	this->height = height;
-	this->tempeture = temperature;
 	pressure = 0;
 	surface = 2 * length * width + 2 * length * height + 2 * width * height;
 	volume = length * width * height;
-	
-	std::random_device rd;  //Will be used to obtain a seed for the random number engine
-	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-	std::uniform_real_distribution<> xDistribution(0.0, length);
-	std::uniform_real_distribution<> yDistribution(0.0, width);
-	std::uniform_real_distribution<> zDistribution(0.0, length);
-	std::normal_distribution<> vDistribution(0.0, sqrt(kBoltzmann * temperature / MOLECULE_MASS));
+	pressureAccumulator = 0;
+	countInVolume = 0;
 	
 	gas = new Molecule*[MOLECULES_NUM];
-	for (int i = 0; i < MOLECULES_NUM; i++) {
-		this->gas[i] = new Molecule(xDistribution(gen), yDistribution(gen), xDistribution(gen),
-				vDistribution(gen), vDistribution(gen), vDistribution(gen), MOLECULE_MASS);
-	}
+	setTemperature(temperature);
 }
 
 Container::~Container() {
@@ -42,6 +33,7 @@ void Container::getVelocityDistribution(sf::Vector3<double> *data) {
 }
 
 void Container::update(long tick) {
+	countInVolume = 0;
 	for (int i = 0; i < MOLECULES_NUM; i++) {
 		const sf::Vector3<double> *curPosition = nullptr;
 		gas[i]->update(DELTA);
@@ -64,14 +56,42 @@ void Container::update(long tick) {
 			gas[i]->setVelocity(curVelocity->x, curVelocity->y, -curVelocity->z);
 			pressureAccumulator += 2 * gas[i]->getMass() * fabs(curVelocity->z);
 		}
+		
+		if (isInVolume(curPosition)) {
+			countInVolume++;
+		}
 	}
 	
-	if (tick % PRESSURE_TICKS_AVERAGE == 0) {
-		pressure = pressureAccumulator / DELTA / PRESSURE_TICKS_AVERAGE / surface;
+	if (tick % TICKS_AVERAGE == 0) {
+		pressure = pressureAccumulator / DELTA / TICKS_AVERAGE / surface;
 		pressureAccumulator = 0;
 	}
 }
 
 double Container::getPressure() {
 	return pressure;
+}
+
+int Container::getCountInVolume() {
+	return countInVolume;
+}
+
+void Container::setTemperature(double temperature) {
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<> xDistribution(0.0, length);
+	std::uniform_real_distribution<> yDistribution(0.0, width);
+	std::uniform_real_distribution<> zDistribution(0.0, length);
+	std::normal_distribution<> vDistribution(0.0, sqrt(kBoltzmann * temperature / MOLECULE_MASS));
+	
+	for (int i = 0; i < MOLECULES_NUM; i++) {
+		this->gas[i] = new Molecule(xDistribution(gen), yDistribution(gen), xDistribution(gen),
+				vDistribution(gen), vDistribution(gen), vDistribution(gen), MOLECULE_MASS);
+	}
+}
+
+bool Container::isInVolume(const sf::Vector3<double> *coordinates) {
+	return (coordinates->x >= VOLUME_X) && (coordinates->x <= VOLUME_X + VOLUME_LENGTH) &&
+			(coordinates->y >= VOLUME_Y) && (coordinates->y <= VOLUME_Y + VOLUME_WIDTH) &&
+			(coordinates->z >= VOLUME_Z) && (coordinates->z <= VOLUME_Z + VOLUME_HEIGHT);
 }
