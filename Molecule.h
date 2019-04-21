@@ -9,10 +9,11 @@ private:
 	sf::Vector3<double> *r;
 	sf::Vector3<double> *v;
 	double mass;
-//	double radius;
+	double radius;
 
 public:
-	Molecule(double rx, double ry, double rz, double vx, double vy, double vz, double mass);
+//	Molecule(double rx, double ry, double rz, double vx, double vy, double vz, double mass);
+	Molecule(double mass, double radius);
 	~Molecule();
 	
 	void update(double delta);
@@ -22,6 +23,7 @@ public:
 	double getMass();
 	
 	void setVelocity(double vx, double vy, double vz);
+	void setCoordinates(double rx, double ry, double rz);
 };
 
 #endif

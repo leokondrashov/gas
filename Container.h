@@ -16,7 +16,7 @@ private:
 	double volume;
 	int countInVolume;
 	
-	bool isInVolume(const sf::Vector3<double> *coordinates);
+//	bool isInVolume(const sf::Vector3<double> *coordinates);
 
 public:
 	Container(double length, double width, double height, double temperature);

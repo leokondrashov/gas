@@ -1,6 +1,10 @@
 #include "Container.h"
 #include <random>
 
+#define isInVolume(coordinates) ((coordinates->x >= VOLUME_X) && (coordinates->x <= VOLUME_X + VOLUME_LENGTH) && \
+(coordinates->y >= VOLUME_Y) && (coordinates->y <= VOLUME_Y + VOLUME_WIDTH) && \
+(coordinates->z >= VOLUME_Z) && (coordinates->z <= VOLUME_Z + VOLUME_HEIGHT))
+
 Container::Container(double length, double width, double height, double temperature) {
 	this->length = length;
 	this->width = width;
@@ -12,6 +16,9 @@ Container::Container(double length, double width, double height, double temperat
 	countInVolume = 0;
 	
 	gas = new Molecule*[MOLECULES_NUM];
+	for (int i = 0; i < MOLECULES_NUM; i++) {
+		this->gas[i] = new Molecule(MOLECULE_MASS, MOLECULE_RADIUS);
+	}
 	setTemperature(temperature);
 }
 
@@ -19,7 +26,7 @@ Container::~Container() {
 	for (int i = 0; i < MOLECULES_NUM; i++) {
 		delete gas[i];
 	}
-	delete gas;
+	delete[] gas;
 }
 
 void Container::getVelocityDistribution(sf::Vector3<double> *data) {
@@ -33,8 +40,10 @@ void Container::getVelocityDistribution(sf::Vector3<double> *data) {
 }
 
 void Container::update(long tick) {
-	countInVolume = 0;
+	int countTmp = 0;
+	double accumulator = 0;
 	for (int i = 0; i < MOLECULES_NUM; i++) {
+		
 		const sf::Vector3<double> *curPosition = nullptr;
 		gas[i]->update(DELTA);
 		curPosition = gas[i]->getCoordinates();
@@ -42,28 +51,31 @@ void Container::update(long tick) {
 		if (curPosition->x > length || curPosition->x < 0) {
 			const sf::Vector3<double> *curVelocity = gas[i]->getVelocity();
 			gas[i]->setVelocity(-curVelocity->x, curVelocity->y, curVelocity->z);
-			pressureAccumulator += 2 * gas[i]->getMass() * fabs(curVelocity->x);
+			accumulator += 2 * gas[i]->getMass() * fabs(curVelocity->x);
 		}
 		
 		if (curPosition->y > width || curPosition->y < 0) {
 			const sf::Vector3<double> *curVelocity = gas[i]->getVelocity();
 			gas[i]->setVelocity(curVelocity->x, -curVelocity->y, curVelocity->z);
-			pressureAccumulator += 2 * gas[i]->getMass() * fabs(curVelocity->y);
+			accumulator += 2 * gas[i]->getMass() * fabs(curVelocity->y);
 		}
 		
 		if (curPosition->z > height || curPosition->z < 0) {
 			const sf::Vector3<double> *curVelocity = gas[i]->getVelocity();
 			gas[i]->setVelocity(curVelocity->x, curVelocity->y, -curVelocity->z);
-			pressureAccumulator += 2 * gas[i]->getMass() * fabs(curVelocity->z);
+			accumulator += 2 * gas[i]->getMass() * fabs(curVelocity->z);
 		}
 		
 		if (isInVolume(curPosition)) {
-			countInVolume++;
+			countTmp++;
 		}
 	}
 	
-	if (tick % TICKS_AVERAGE == 0) {
-		pressure = pressureAccumulator / DELTA / TICKS_AVERAGE / surface;
+	pressureAccumulator += accumulator;
+	countInVolume = countTmp;
+	
+	if (tick % PRESSURE_TICKS_AVERAGE == 0) {
+		pressure = pressureAccumulator / DELTA / PRESSURE_TICKS_AVERAGE / surface;
 		pressureAccumulator = 0;
 	}
 }
@@ -85,8 +97,8 @@ void Container::setTemperature(double temperature) {
 	std::normal_distribution<> vDistribution(0.0, sqrt(kBoltzmann * temperature / MOLECULE_MASS));
 	
 	for (int i = 0; i < MOLECULES_NUM; i++) {
-		this->gas[i] = new Molecule(xDistribution(gen), yDistribution(gen), xDistribution(gen),
-				vDistribution(gen), vDistribution(gen), vDistribution(gen), MOLECULE_MASS);
+		this->gas[i]->setCoordinates(xDistribution(gen), yDistribution(gen), xDistribution(gen));
+		this->gas[i]->setVelocity(vDistribution(gen), vDistribution(gen), vDistribution(gen));
 	}
 }
 
