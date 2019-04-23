@@ -17,6 +17,8 @@ private:
 	int countInVolume;
 	
 //	bool isInVolume(const sf::Vector3<double> *coordinates);
+	bool collisionTest(Molecule *m1, Molecule *m2);
+	void collide(Molecule *m1, Molecule *m2);
 
 public:
 	Container(double length, double width, double height, double temperature);

@@ -1,7 +1,6 @@
 #ifndef GAS_MOLECULE_H
 #define GAS_MOLECULE_H
 
-#include "Constants.h"
 #include <SFML/System/Vector3.hpp>
 
 class Molecule {

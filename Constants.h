@@ -3,13 +3,13 @@
 
 #define kBoltzmann 1.38e-23
 
-#define MOLECULES_NUM 100
+#define MOLECULES_NUM 1000
 #define MOLECULE_MASS (28e-3/6.02e23)
 #define MOLECULE_RADIUS 1.6e-10
 
-#define CONTAINER_LENGTH 1.0e-6
-#define CONTAINER_WIDTH 1.0e-6
-#define CONTAINER_HEIGHT 1.0e-6
+#define CONTAINER_LENGTH 1.0e-8
+#define CONTAINER_WIDTH 1.0e-8
+#define CONTAINER_HEIGHT 1.0e-8
 
 #define VOLUME_LENGTH 1.0e-7
 #define VOLUME_WIDTH 1.0e-7
@@ -35,7 +35,8 @@
 #define PRESS_FLUCTS_FILE "log/pressFlucts%s.csv"
 #define FLUCTUATIONS_VS_TEMP "log/flutcsVsTemp%s.csv"
 
+#define EXPERIMENT_LENGTH 100000
 #define TICKS_AVERAGE 1000
-#define PRESSURE_TICKS_AVERAGE 1
+#define PRESSURE_TICKS_AVERAGE 1000
 
 #endif //GAS_CONSTANTS_H

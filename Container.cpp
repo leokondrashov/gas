@@ -71,6 +71,14 @@ void Container::update(long tick) {
 		}
 	}
 	
+	for (int i = 0; i < MOLECULES_NUM; i++) {
+		for (int j = i + 1; j < MOLECULES_NUM; j++) {
+			if (collisionTest(gas[i], gas[j])) {
+				collide(gas[i], gas[j]);
+			}
+		}
+	}
+	
 	pressureAccumulator += accumulator;
 	countInVolume = countTmp;
 	
@@ -102,8 +110,28 @@ void Container::setTemperature(double temperature) {
 	}
 }
 
-bool Container::isInVolume(const sf::Vector3<double> *coordinates) {
-	return (coordinates->x >= VOLUME_X) && (coordinates->x <= VOLUME_X + VOLUME_LENGTH) &&
-			(coordinates->y >= VOLUME_Y) && (coordinates->y <= VOLUME_Y + VOLUME_WIDTH) &&
-			(coordinates->z >= VOLUME_Z) && (coordinates->z <= VOLUME_Z + VOLUME_HEIGHT);
+double dotProduct(const sf::Vector3<double> *v1, const sf::Vector3<double> *v2) {
+	return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
+}
+
+bool Container::collisionTest(Molecule *m1, Molecule *m2) {
+	sf::Vector3<double> dr = *(m1->getCoordinates()) - *(m2->getCoordinates());
+	return dotProduct(&dr, &dr) < (MOLECULE_RADIUS * 2) * (MOLECULE_RADIUS * 2);
+}
+
+void Container::collide(Molecule *m1, Molecule *m2) {
+//	printf("collision\n");
+	const sf::Vector3<double> *r1 = (m1->getCoordinates());
+	const sf::Vector3<double> *r2 = (m2->getCoordinates());
+	sf::Vector3<double> dr = *r1 - *r2;
+	const sf::Vector3<double> *v1 = (m1->getVelocity());
+	const sf::Vector3<double> *v2 = (m2->getVelocity());
+	sf::Vector3<double> u = *v2 - *v1;
+	sf::Vector3<double> uPerp = dr * dotProduct(&u, &dr) / dotProduct(&dr, &dr);
+	
+	sf::Vector3<double> newV1 = uPerp + *v1;
+	sf::Vector3<double> newV2 = *v2 - uPerp;
+	
+	m1->setVelocity(newV1.x, newV1.y, newV1.z);
+	m2->setVelocity(newV2.x, newV2.y, newV2.z);
 }

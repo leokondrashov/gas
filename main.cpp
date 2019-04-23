@@ -36,49 +36,51 @@ int main() {
 	
 	printConsts();
 
-//	FILE *velocities = creatVelocities();
+	FILE *velocities = creatVelocities();
 	FILE *pressures = creatPressures();
-	FILE *pressVsTemp = creatPressVsTemp();
-	FILE *fluctsVsTemp = creatFluctsVsTemp();
-	FILE *pressFlucts = creatPressFlucts();
+//	FILE *pressVsTemp = creatPressVsTemp();
+//	FILE *fluctsVsTemp = creatFluctsVsTemp();
+//	FILE *pressFlucts = creatPressFlucts();
 	
-/*	for (long t = 0; t <= (long) 1e5; t++) {
+	
+	sf::Vector3<double> *data = new sf::Vector3<double>[MOLECULES_NUM];
+	for (long t = 0; t <= EXPERIMENT_LENGTH; t++) {
 		container.update(t);
 		if (t % TICKS_AVERAGE == 0) {
 			container.getVelocityDistribution(data);
 			printVelocityDistribution(t, data, velocities);
 			printPressure(t, container.getPressure(), pressures);
 		}
-	}*/
-
-	int *count = new int[TICKS_AVERAGE];
-	double *pressData = new double[TICKS_AVERAGE / PRESSURE_TICKS_AVERAGE];
-	double pressure = 0;
-
-	for (double temperature = GAS_TEMPERATURE_START; temperature <= GAS_TEMPERATURE_END; temperature += GAS_TEMPERATURE_STEP, container.setTemperature(temperature)) {
-		for (int t = 1; t <= TICKS_AVERAGE; t++) {
-			container.update(t);
-			count[t] = container.getCountInVolume();
-			if (t % PRESSURE_TICKS_AVERAGE == 0) {
-				pressData[t / PRESSURE_TICKS_AVERAGE - 1] = container.getPressure();
-				printPressure(t, pressData[t / PRESSURE_TICKS_AVERAGE - 1], pressures);
-			}
-		}
-		pressure = mean(pressData, TICKS_AVERAGE / PRESSURE_TICKS_AVERAGE);
-		printFluctuations(temperature, fluctuations(count, TICKS_AVERAGE), mean(count, TICKS_AVERAGE), fluctsVsTemp);
-		printPressureFluctuations(temperature, fluctuations(pressData, TICKS_AVERAGE / PRESSURE_TICKS_AVERAGE),
-				pressure, pressFlucts);
-		printPressureVsTemperature(temperature, pressure, pressVsTemp);
 	}
+
+//	int *count = new int[TICKS_AVERAGE];
+//	double *pressData = new double[TICKS_AVERAGE / PRESSURE_TICKS_AVERAGE];
+//	double pressure = 0;
+//
+//	for (double temperature = GAS_TEMPERATURE_START; temperature <= GAS_TEMPERATURE_END; temperature += GAS_TEMPERATURE_STEP, container.setTemperature(temperature)) {
+//		for (int t = 1; t <= TICKS_AVERAGE; t++) {
+//			container.update(t);
+//			count[t] = container.getCountInVolume();
+//			if (t % PRESSURE_TICKS_AVERAGE == 0) {
+//				pressData[t / PRESSURE_TICKS_AVERAGE - 1] = container.getPressure();
+//				printPressure(t, pressData[t / PRESSURE_TICKS_AVERAGE - 1], pressures);
+//			}
+//		}
+//		pressure = mean(pressData, TICKS_AVERAGE / PRESSURE_TICKS_AVERAGE);
+//		printFluctuations(temperature, fluctuations(count, TICKS_AVERAGE), mean(count, TICKS_AVERAGE), fluctsVsTemp);
+//		printPressureFluctuations(temperature, fluctuations(pressData, TICKS_AVERAGE / PRESSURE_TICKS_AVERAGE),
+//				pressure, pressFlucts);
+//		printPressureVsTemperature(temperature, pressure, pressVsTemp);
+//	}
 	
-//	fclose(velocities);
+	fclose(velocities);
 	fclose(pressures);
-	fclose(pressVsTemp);
-	fclose(fluctsVsTemp);
-	fclose(pressFlucts);
+//	fclose(pressVsTemp);
+//	fclose(fluctsVsTemp);
+//	fclose(pressFlucts);
 	
-	delete[] count;
-	delete[] pressData;
+//	delete[] count;
+//	delete[] pressData;
 	
 	return 0;
 }

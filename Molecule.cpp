@@ -1,5 +1,4 @@
 #include "Molecule.h"
-#include "Constants.h"
 
 //Molecule::Molecule(double rx, double ry, double rz, double vx, double vy, double vz, double mass) {
 //	r = new sf::Vector3<double>();
