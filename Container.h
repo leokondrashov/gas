@@ -1,8 +1,8 @@
 #ifndef GAS_CONTAINER_H
 #define GAS_CONTAINER_H
 
-#include "Constants.h"
 #include "Molecule.h"
+#include "OctTree.h"
 
 class Container {
 private:
@@ -16,12 +16,15 @@ private:
 	double volume;
 	int countInVolume;
 	
+	OctTree *tree;
+	
 //	bool isInVolume(const sf::Vector3<double> *coordinates);
 	bool collisionTest(Molecule *m1, Molecule *m2);
 	void collide(Molecule *m1, Molecule *m2);
 
 public:
 	Container(double length, double width, double height, double temperature);
+	Container(double length, double width, double height);
 	~Container();
 	
 	void update(long tick);
@@ -31,6 +34,9 @@ public:
 	int getCountInVolume();
 	
 	void setTemperature(double temperature);
+	void setRandomDistribution();
+	
+	void testCollisions(const OctTreeNode *node, Molecule *molecule);
 };
 
 #endif //GAS_CONTAINER_H

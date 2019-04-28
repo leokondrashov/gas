@@ -9,6 +9,7 @@ private:
 	sf::Vector3<double> *v;
 	double mass;
 	double radius;
+	bool collided;
 
 public:
 //	Molecule(double rx, double ry, double rz, double vx, double vy, double vz, double mass);
@@ -20,9 +21,13 @@ public:
 	const sf::Vector3<double> *getCoordinates();
 	const sf::Vector3<double> *getVelocity();
 	double getMass();
+	double getRadius();
 	
 	void setVelocity(double vx, double vy, double vz);
 	void setCoordinates(double rx, double ry, double rz);
+	
+	void setCollided();
+	bool isCollided();
 };
 
 #endif

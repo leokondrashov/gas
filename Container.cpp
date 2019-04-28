@@ -1,5 +1,7 @@
 #include "Container.h"
+#include "Constants.h"
 #include <random>
+#include <assert.h>
 
 #define isInVolume(coordinates) ((coordinates->x >= VOLUME_X) && (coordinates->x <= VOLUME_X + VOLUME_LENGTH) && \
 (coordinates->y >= VOLUME_Y) && (coordinates->y <= VOLUME_Y + VOLUME_WIDTH) && \
@@ -15,6 +17,8 @@ Container::Container(double length, double width, double height, double temperat
 	pressureAccumulator = 0;
 	countInVolume = 0;
 	
+	tree = new OctTree(length, width, height);
+	
 	gas = new Molecule*[MOLECULES_NUM];
 	for (int i = 0; i < MOLECULES_NUM; i++) {
 		this->gas[i] = new Molecule(MOLECULE_MASS, MOLECULE_RADIUS);
@@ -22,20 +26,63 @@ Container::Container(double length, double width, double height, double temperat
 	setTemperature(temperature);
 }
 
+Container::Container(double length, double width, double height) {
+	this->length = length;
+	this->width = width;
+	this->height = height;
+	pressure = 0;
+	surface = 2 * length * width + 2 * length * height + 2 * width * height;
+	volume = length * width * height;
+	pressureAccumulator = 0;
+	countInVolume = 0;
+	
+	tree = new OctTree(length, width, height);
+	
+	gas = new Molecule*[MOLECULES_NUM];
+	for (int i = 0; i < MOLECULES_NUM; i++) {
+		this->gas[i] = new Molecule(MOLECULE_MASS, MOLECULE_RADIUS);
+	}
+}
+
 Container::~Container() {
 	for (int i = 0; i < MOLECULES_NUM; i++) {
 		delete gas[i];
 	}
 	delete[] gas;
+	
+	delete tree;
 }
 
 void Container::getVelocityDistribution(sf::Vector3<double> *data) {
+	assert(data);
+	
 	const sf::Vector3<double> *curVelocity = nullptr;
 	for (int i = 0; i < MOLECULES_NUM; i++) {
 		curVelocity = gas[i]->getVelocity();
 		data[i].x = curVelocity->x;
 		data[i].y = curVelocity->y;
 		data[i].z = curVelocity->z;
+	}
+}
+
+void Container::testCollisions(const OctTreeNode *node, Molecule *molecule) {
+	assert(molecule);
+	if (node == nullptr) {
+		return;
+	}
+	
+	if (node->isNear(molecule)) {
+		Molecule *m = node->getMolecule();
+		if (m != nullptr) {
+			if (m->isCollided() || m == molecule)
+				return;
+			collide(m, molecule);
+			return;
+		}
+		
+		for (int i = 0; i < 8; i++) {
+			testCollisions(node->getChild(i), molecule);
+		}
 	}
 }
 
@@ -71,12 +118,17 @@ void Container::update(long tick) {
 		}
 	}
 	
+	tree->clear();
+	
 	for (int i = 0; i < MOLECULES_NUM; i++) {
-		for (int j = i + 1; j < MOLECULES_NUM; j++) {
-			if (collisionTest(gas[i], gas[j])) {
-				collide(gas[i], gas[j]);
-			}
-		}
+		tree->AddMolecule(gas[i]);
+	}
+	
+//	tree->dump();
+	
+	for (int i = 0; i < MOLECULES_NUM; i++) {
+		testCollisions(tree->gerRoot(), gas[i]);
+		gas[i]->setCollided();
 	}
 	
 	pressureAccumulator += accumulator;
@@ -111,16 +163,27 @@ void Container::setTemperature(double temperature) {
 }
 
 double dotProduct(const sf::Vector3<double> *v1, const sf::Vector3<double> *v2) {
+	assert(v1);
+	assert(v2);
 	return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
 }
 
 bool Container::collisionTest(Molecule *m1, Molecule *m2) {
+	assert(m1);
+	assert(m2);
 	sf::Vector3<double> dr = *(m1->getCoordinates()) - *(m2->getCoordinates());
-	return dotProduct(&dr, &dr) < (MOLECULE_RADIUS * 2) * (MOLECULE_RADIUS * 2);
+	return dotProduct(&dr, &dr) < (m1->getRadius() + m2->getRadius()) * (m1->getRadius() + m2->getRadius());
 }
 
 void Container::collide(Molecule *m1, Molecule *m2) {
 //	printf("collision\n");
+	assert(m1);
+	assert(m2);
+	assert(m1 != m2);
+
+	if (!collisionTest(m1, m2))
+		return;
+	
 	const sf::Vector3<double> *r1 = (m1->getCoordinates());
 	const sf::Vector3<double> *r2 = (m2->getCoordinates());
 	sf::Vector3<double> dr = *r1 - *r2;

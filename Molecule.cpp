@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "Molecule.h"
 
 //Molecule::Molecule(double rx, double ry, double rz, double vx, double vy, double vz, double mass) {
@@ -27,6 +28,8 @@ Molecule::Molecule(double mass, double radius) {
 	
 	this->mass = mass;
 	this->radius = radius;
+	
+	collided = false;
 }
 
 Molecule::~Molecule() {
@@ -36,9 +39,12 @@ Molecule::~Molecule() {
 
 void Molecule::update(double delta) {
 	*r += delta * *v;
+	collided = false;
 }
 
 const sf::Vector3<double> *Molecule::getCoordinates() {
+	assert(this);
+	
 	return r;
 }
 
@@ -60,5 +66,17 @@ void Molecule::setCoordinates(double rx, double ry, double rz) {
 
 double Molecule::getMass() {
 	return mass;
+}
+
+void Molecule::setCollided() {
+	collided = true;
+}
+
+bool Molecule::isCollided() {
+	return collided;
+}
+
+double Molecule::getRadius() {
+	return radius;
 }
 

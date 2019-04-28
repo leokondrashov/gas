@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <assert.h>
 #include "Container.h"
 #include "Constants.h"
 
@@ -45,12 +46,12 @@ int main() {
 	
 	sf::Vector3<double> *data = new sf::Vector3<double>[MOLECULES_NUM];
 	for (long t = 0; t <= EXPERIMENT_LENGTH; t++) {
-		container.update(t);
 		if (t % TICKS_AVERAGE == 0) {
 			container.getVelocityDistribution(data);
 			printVelocityDistribution(t, data, velocities);
 			printPressure(t, container.getPressure(), pressures);
 		}
+		container.update(t);
 	}
 
 //	int *count = new int[TICKS_AVERAGE];
@@ -202,7 +203,7 @@ void printVelocityDistribution(long time, sf::Vector3<double> *data, FILE *velFi
 		fprintf(velFile, ", %6d", count[i]);
 	}
 	
-	fprintf(velFile, "\b\b\n");
+	fprintf(velFile, "\n");
 	
 	delete[] count;
 }
@@ -224,6 +225,8 @@ void printPressureFluctuations(double temp, double fluctuation, double mean, FIL
 }
 
 double mean(const int *data, const int n) {
+	assert(data);
+	
 	double meanN = 0;
 	for (int i = 0; i < n; i++) {
 		meanN += data[i];
@@ -234,6 +237,8 @@ double mean(const int *data, const int n) {
 }
 
 double mean(const double *data, const int n) {
+	assert(data);
+	
 	double meanN = 0;
 	for (int i = 0; i < n; i++) {
 		meanN += data[i];
@@ -244,6 +249,8 @@ double mean(const double *data, const int n) {
 }
 
 double fluctuations(const int *data, const int n) {
+	assert(data);
+	
 	double sum = 0;
 	double sumSqr = 0;
 	
@@ -256,6 +263,8 @@ double fluctuations(const int *data, const int n) {
 }
 
 double fluctuations(const double *data, const int n) {
+	assert(data);
+	
 	double sum = 0;
 	double sumSqr = 0;
 	
