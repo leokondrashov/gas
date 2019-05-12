@@ -22,9 +22,13 @@ public:
 	const sf::Vector3<double> *getVelocity();
 	double getMass();
 	double getRadius();
+	double getEnergy();
 	
 	void setVelocity(double vx, double vy, double vz);
 	void setCoordinates(double rx, double ry, double rz);
+	void setMass(double mass);
+	
+	
 	
 	void setCollided();
 	bool isCollided();

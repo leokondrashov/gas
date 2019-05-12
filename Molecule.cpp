@@ -80,3 +80,12 @@ double Molecule::getRadius() {
 	return radius;
 }
 
+void Molecule::setMass(double mass) {
+	this->mass = mass;
+}
+
+double Molecule::getEnergy() {
+	double velocitySqr = v->x * v->x + v->y * v->y + v->z * v->z;
+	return mass * velocitySqr / 2;
+}
+

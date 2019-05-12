@@ -189,12 +189,70 @@ void Container::collide(Molecule *m1, Molecule *m2) {
 	sf::Vector3<double> dr = *r1 - *r2;
 	const sf::Vector3<double> *v1 = (m1->getVelocity());
 	const sf::Vector3<double> *v2 = (m2->getVelocity());
+	
 	sf::Vector3<double> u = *v2 - *v1;
 	sf::Vector3<double> uPerp = dr * dotProduct(&u, &dr) / dotProduct(&dr, &dr);
 	
-	sf::Vector3<double> newV1 = uPerp + *v1;
+	sf::Vector3<double> newV1 = uPerp / m1->getMass() * m2->getMass() + *v1;
 	sf::Vector3<double> newV2 = *v2 - uPerp;
 	
 	m1->setVelocity(newV1.x, newV1.y, newV1.z);
 	m2->setVelocity(newV2.x, newV2.y, newV2.z);
+}
+
+
+void Container::setRandomDistribution() {
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<> xDistribution(0.0, length);
+	std::uniform_real_distribution<> yDistribution(0.0, width);
+	std::uniform_real_distribution<> zDistribution(0.0, length);
+	std::uniform_real_distribution<> vDistribution(-MAX_VELOCITY / sqrt(3) / 2, MAX_VELOCITY / sqrt(3) / 2);
+	
+	for (int i = 0; i < MOLECULES_NUM; i++) {
+		this->gas[i]->setCoordinates(xDistribution(gen), yDistribution(gen), xDistribution(gen));
+		this->gas[i]->setVelocity(vDistribution(gen), vDistribution(gen), vDistribution(gen));
+	}
+}
+
+
+double Container::getEnergy() {
+	double energy = 0;
+	for (int i = 0; i < MOLECULES_NUM; i++) {
+		const sf::Vector3<double> *velocity = gas[i]->getVelocity();
+		double velocitySqr = dotProduct(velocity, velocity);
+		energy += gas[i]->getMass() * velocitySqr / 2;
+	}
+	
+	return energy;
+}
+
+void Container::addMassiveMolecules(int num) {
+	for (; num > 0; num--) {
+		gas[MOLECULES_NUM - num]->setMass(MASSIVE_MOLECULE_MASS);
+		const sf::Vector3<double> *velocity = gas[MOLECULES_NUM - num]->getVelocity();
+		double coefficient = sqrt(MASSIVE_MOLECULE_MASS / MOLECULE_MASS);
+		gas[MOLECULES_NUM - num]->setVelocity(velocity->x / coefficient, velocity->y / coefficient, velocity->z / coefficient);
+	}
+}
+
+void Container::addFastMolecules(int num) {
+	for (; num > 0; num--) {
+		const sf::Vector3<double> *velocity = gas[MOLECULES_NUM - num]->getVelocity();
+		gas[MOLECULES_NUM - num]->setVelocity(velocity->x * 10, velocity->y * 10, velocity->z * 10);
+	}
+}
+
+void Container::getEnergyDistribution(double *data) {
+	assert(data);
+	
+	for (int i = 0; i < MOLECULES_NUM; i++) {
+		data[i] = gas[i]->getEnergy();
+	}
+}
+
+void Container::addSlowMolecules(int num) {
+	for (; num > 0; num--) {
+		gas[MOLECULES_NUM - num]->setVelocity(0, 0, 0);
+	}
 }
